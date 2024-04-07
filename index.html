@@ -11,75 +11,151 @@
     <title>Stellaris Color Helper!</title>
 </head>
 
-<body>   
-
+<body>
     <div class="container">
-        <p class="d-inline-flex gap-1">
-            <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample"
-                aria-expanded="false" aria-controls="collapseExample">
-                Stellaris Color Codes
-            </button>
-        </p>
-        <div class="collapse" id="collapseExample">
-            <div class="card card-body" id="table-content">
-                <a href="https://stellaris.paradoxwikis.com/Localisation_modding">Stellaris Color Palette from stellaris.paradoxwikis.com</a>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="stellaris-color-code-tab" data-bs-toggle="tab"
+                    data-bs-target="#stellaris-color-code" type="button" role="tab" aria-controls="home"
+                    aria-selected="true">Stellaris Color Helper</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="stellaris-console-tab" data-bs-toggle="tab"
+                    data-bs-target="#stellaris-console" type="button" role="tab" aria-controls="stellaris-console"
+                    aria-selected="false">Stellaris Console Commands</button>
+            </li>
+
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane show active" id="stellaris-color-code" role="tabpanel"
+                aria-labelledby="stellaris-color-code-tab">
+                <p class="d-inline-flex gap-1">
+                    <button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#color-codes-card" aria-expanded="false" aria-controls="color-codes-card">
+                        Stellaris Color Codes
+                    </button>
+                </p>
+                <div class="collapse" id="color-codes-card">
+                    <div class="card card-body" id="table-content">
+                        <a href="https://stellaris.paradoxwikis.com/Localisation_modding">Stellaris Color Palette from
+                            stellaris.paradoxwikis.com</a>
+                    </div>
+
+                </div>
+                <form>
+                    <div class="mb-3">
+                        <div class="btn-toolbar" role="toolbar">
+                            <div role="group" class="btn-group btn-group-sm" id="color-buttons"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="input">Input</label>
+                        <input id="input" type="text" class="form-control"
+                            placeholder="{R}My {CB}Awesome {Y}Name{RESET}"></input>
+
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input checked id="add-reset" type="checkbox" class="form-check-input"></input>
+                            <label class="form-label" for="add-reset">Automaticly add reset at the end</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="output" class="form-label">Output</label>
+                        <input id="output" type="text" class="form-control" readonly
+                            placeholder="output with color control codes (insert as-is into stellaris)"></input>
+                        <small id="length-warning" class=" text-warning"></small>
+                    </div>
+                    <div class="mb-3">
+                        <label>Preview:</label>
+                        <br>
+                        <div class="preview-box">
+                            <span id="preview" class="hide"></span>
+                            <span style="font-size: 0;">test</span>
+                        </div>
+
+                    </div>
+                    <button id="copy-to-clipboard" type="button" class="btn btn-outline-primary">Copy to
+                        Clipboard</button>
+                    <button id="generate-name" type="button" class="btn btn-outline-primary">Generate Name</button>
+                </form>
+
+                <div id="liveToast" class="toast align-items-center" role="alert" aria-live="assertive"
+                    aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body" id="toast-text">
+                        </div>
+                        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
+                            aria-label="Close"></button>
+                    </div>
+                </div>
             </div>
-            
+            <div class="tab-pane" id="stellaris-console" role="tabpanel" aria-labelledby="stellaris-console-tab">
+                <div class="container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Command</th>
+                                <th scope="col">Arguments</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Source</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>effect this = { while = { count = N random_owned_pop = { kill_pop = yes } } }</code>
+                                </td>
+                                <td>Replace N with the amount of pops to kill</td>
+                                <td>Kills N random pops on the current planet</td>
+                                <td><a
+                                        href="https://www.reddit.com/r/Stellaris/comments/16za69i/anyway_to_use_commands_to_kill_my_own_pops/">Reddit</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>effect remove_megastructure = this</code></td>
+                                <td>None</td>
+                                <td>Deletes selected megastructure</td>
+                                <td>Don't remember</td>
+                            </tr>
+                            <tr>
+                                <td><code>effect this = {remove_planet_flag = FLAG}</code></td>
+                                <td>Replace FLAG with the id of the flag to remove</td>
+                                <td>Clears the flag from the planet</td>
+                                <td>Selfmade</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <code>
+                                        effect switch = { trigger = has_global_flag
+                                            gray_goo_crisis_set	= { custom_tooltip = "Gray Tempest"}
+                                            dragon_season		= { custom_tooltip = "L-Drake" }
+                                            gray_goo_empire_set	= { custom_tooltip = "Dessanu Consonance" }
+                                            default				= { custom_tooltip = "Gray" }
+                                        }
+                                    </code>
+                                </td>
+                                <td>None</td>
+                                <td>Displays in console which L-Gate event will appear</td>
+                                <td><a href="https://www.reddit.com/r/Stellaris/comments/15eng60/commands_for_l_gate_tempest/">Reddit</a></td>
+                            </tr>
+                            <tr>
+                                <td><code>effect remove_global_flag = dragon_season remove_global_flag = gray_goo_empire_set set_global_flag = gray_goo_crisis_set</code></td>
+                                <td>None</td>
+                                <td>Sets the L-Gate to Gray Tempest</td>
+                                <td><a href="https://www.reddit.com/r/Stellaris/comments/15eng60/commands_for_l_gate_tempest/">Reddit</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <a href="https://stellaris.paradoxwikis.com/Effects">See Stellaris Wiki for more</a>
+                </div>
+            </div>
+
         </div>
-        <form>
-            <div class="mb-3">
-                <div class="btn-toolbar" role="toolbar">
-                    <div role="group" class="btn-group btn-group-sm" id="color-buttons"></div>
-                </div>
-            </div>
-            <div class="mb-3">
-                                <label class="form-label" for="input">Input</label>
-                <input id="input" type="text" class="form-control" placeholder="{R}My {CB}Awesome {Y}Name{RESET}"></input>
-               
-            </div>
-            <div class="mb-3">
-                <div class="form-check">
-                    <input checked id="add-reset" type="checkbox" class="form-check-input"></input>
-                    <label class="form-label" for="add-reset">Automaticly add reset at the end</label>
-                </div>
-            </div>
-            
-            <div class="mb-3">
-                <label for="output" class="form-label">Output</label>
-                <input id="output" type="text" class="form-control" readonly
-                    placeholder="output with color control codes (insert as-is into stellaris)"></input>
-                    <small id="length-warning" class=" text-warning"></small>
-            </div>
-            <div class="mb-3">
-                <label>Preview:</label>
-                <br>
-                <div class="preview-box">
-                    <span id="preview" class="hide"></span>
-                    <span style="font-size: 0;">test</span>
-                </div>
-                
-            </div>
-            <button id="copy-to-clipboard" type="button" class="btn btn-outline-primary">Copy to Clipboard</button>
-            <button id="generate-name" type="button" class="btn btn-outline-primary">Generate Name</button>
-        </form>
-
-        <div id="liveToast" class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-              <div class="toast-body" id="toast-text">                               
-              </div>
-              <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-          </div>
-       
-          
-
-
-
-
-
-
 
     </div>
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
