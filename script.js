@@ -415,160 +415,161 @@ const ship_names = [
 
 const colorData = [
     {
-        stellarisCode: 'W',
+        stellarisCode: ['W'],
         color: 'White',
         vanillaUse: 'Diplomatic Attitudes',
         code: '{W}',
         rgb: 'rgb(255, 255, 255)'
     },
     {
-        stellarisCode: 'T',
+        stellarisCode: ['T'],
         color: 'Light Grey',
         vanillaUse: 'Standard color of all text',
         code: '{LGrey}',
         rgb: 'rgb(238, 238, 238)'
     },
     {
-        stellarisCode: 'g',
+        stellarisCode: ['g'],
         color: 'Dark Grey',
         vanillaUse: 'Disabled / inactive',
         code: '{DGrey}',
         rgb: 'rgb(128, 128, 128)'
     },
     {
-        stellarisCode: 'L',
+        stellarisCode: ['L'],
         color: 'Brown / Kaki',
         vanillaUse: 'Lore, back story, role playing elements',
         code: '{B}',
         rgb: 'rgb(195, 176, 145)'
     },
     {
-        stellarisCode: 'P',
+        stellarisCode: ['P'],
         color: 'Light Dirty Pink',
         vanillaUse: 'Highlighting of Aggressive text in descriptions and event text',
         code: '{LDP}',
         rgb: 'rgb(225, 110, 110)'
     },
     {
-        stellarisCode: 'R',
+        stellarisCode: ['R'],
         color: 'Red',
         vanillaUse: 'Negative modifiers',
         code: '{R}',
         rgb: 'rgb(252, 86, 70)'
     },
     {
-        stellarisCode: 'S',
+        stellarisCode: ['S'],
         color: 'Dark Orange',
         vanillaUse: 'Subtle highlighted text',
         code: '{DO}',
         rgb: 'rgb(228, 156, 42)'
     },
     {
-        stellarisCode: 'H / K',
+        stellarisCode: ['H', 'K'],
         color: 'Mango / Orange',
         vanillaUse: 'Highlighted text',
         code: '{O}',
         rgb: 'rgb(251, 170, 41)'
     },
     {
-        stellarisCode: 'Y / I',
+        stellarisCode: ['Y', 'I'],
         color: 'Yellow',
         vanillaUse: 'Sub-optimal or Neutral modifiers',
         code: '{Y}',
         rgb: 'rgb(247, 252, 52)'
     },
     {
-        stellarisCode: 'G',
+        stellarisCode: ['G'],
         color: 'Green',
         vanillaUse: 'Positive modifiers',
         code: '{G}',
         rgb: 'rgb(41, 225, 38)'
     },
     {
-        stellarisCode: 'V',
+        stellarisCode: ['V'],
         color: 'Dark Green',
         vanillaUse: 'Event text',
         code: '{DG}',
         rgb: 'rgb(76, 138, 113)'
     },
     {
-        stellarisCode: 'E',
+        stellarisCode: ['E'],
         color: 'Teal',
         vanillaUse: 'Large chunks of text',
         code: '{T}',
         rgb: 'rgb(135, 255, 207)'
     },
     {
-        stellarisCode: 'C',
+        stellarisCode: ['C'],
         color: 'Cyan',
         vanillaUse: 'Concept text that generates another tooltip',
         code: '{C}',
         rgb: 'rgb(33, 232, 208)'
     },
     {
-        stellarisCode: 'B',
+        stellarisCode: ['B'],
         color: 'Cyan-Blue',
         vanillaUse: 'Event effects that affect pops',
         code: '{CB}',
         rgb: 'rgb(51, 167, 255)'
     },
     {
-        stellarisCode: 'M',
+        stellarisCode: ['M'],
         color: 'Purple',
         vanillaUse: 'Rare technologies',
         code: '{P}',
         rgb: 'rgb(163, 53, 238)'
     },
     {
-        stellarisCode: '_',
+        stellarisCode: ['_'],
         color: 'Magenta',
         vanillaUse: 'Placeholders',
         code: '{M}',
         rgb: 'rgb(255, 0, 255)'
     },
     {
-        stellarisCode: 'c',
+        stellarisCode: ['c'],
         color: 'Blue-Green',
         vanillaUse: 'Leader trait',
         code: '{BG}',
         rgb: 'rgb(60, 208, 146)'
     },
     {
-        stellarisCode: 'v',
+        stellarisCode: ['v'],
         color: 'Faded Green',
         vanillaUse: 'Veteran leader trait',
         code: '{FG}',
         rgb: 'rgb(139, 174, 162)'
     },
     {
-        stellarisCode: 'd',
+        stellarisCode: ['d'],
         color: 'Tan',
         vanillaUse: 'Destiny trait',
         code: '{T}',
         rgb: 'rgb(255, 221, 122)'
     },
     {
-        stellarisCode: 'r',
+        stellarisCode: ['r'],
         color: 'Light Purple',
         vanillaUse: 'Renowned',
         code: '{LP}',
         rgb: 'rgb(163, 130, 255)'
     },
     {
-        stellarisCode: 'l',
+        stellarisCode: ['l'],
         color: 'Light Green',
         vanillaUse: 'Legendary',
         code: '{LG}',
         rgb: 'rgb(178, 236, 104)'
     },
     {
-        stellarisCode: '!',
+        stellarisCode: ['!'],
         color: 'Default',
         vanillaUse: 'Return to color before last color change',
         code: '{RESET}',
         rgb: ''
     }
 ];
+
 
 const MAX_LENGTH_NAME = 32;
 const DC1_CHAR = '';
@@ -582,8 +583,8 @@ const addResetCheckbox = document.getElementById("add-reset");
 
 const generateNameButton = document.getElementById("generate-name");
 const copyToClipboardButton = document.getElementById("copy-to-clipboard");
-const toastTrigger = document.getElementById('liveToastBtn')
-const toastLiveExample = document.getElementById('liveToast')
+const toastTrigger = document.getElementById("liveToastBtn")
+const toastLiveExample = document.getElementById("liveToast")
 const toast = new bootstrap.Toast(toastLiveExample)
 
 // Utilize modern JavaScript features for cleaner code
@@ -609,7 +610,9 @@ function addTable() {
             createElement('tr', {}, ...['stellarisCode', 'color', 'vanillaUse', 'code', 'rgb'].map(property =>
                 createElement('td', {}, property === 'color' ?
                     createElement('span', { textContent: data[property], style: `color: ${data.rgb}` }) :
-                    data[property])
+                    property === 'stellarisCode' ?
+                        data[property].join(' / ') :
+                        data[property])
             ))
         ))
     );
@@ -633,15 +636,24 @@ function insertCodeAtCursor(code) {
     handleInputEvent();
 }
 
-
 function replaceWithControlChar(input) {
-    return colorData.reduce((outputText, data) => 
-        outputText.replaceAll(data.code, DC1_CHAR + data.stellarisCode.charAt(0)), input);
+    return colorData.reduce((outputText, data) => {
+        let modifiedText = outputText;
+        data.stellarisCode.forEach(code => {
+            modifiedText = modifiedText.replaceAll(data.code, DC1_CHAR + code);
+        });
+        return modifiedText;
+    }, input);
 }
 
 function updatePreview(input) {
-    previewEl.innerHTML = colorData.reduce((acc, data) =>
-        acc.replaceAll(DC1_CHAR + data.stellarisCode.charAt(0), `<span style='color: ${data.rgb}'>`), input) + '</span>';
+    previewEl.innerHTML = colorData.reduce((acc, data) => {
+        let modifiedAcc = acc;
+        data.stellarisCode.forEach(code => {
+            modifiedAcc = modifiedAcc.replaceAll(DC1_CHAR + code, `<span style='color: ${data.rgb}'>`);
+        });
+        return modifiedAcc;
+    }, input) + '</span>';
 }
 
 function validateLength() {
@@ -650,29 +662,27 @@ function validateLength() {
 }
 
 function handleInputEvent() {
-    let currentValue = inputEl.value + (addResetCheckbox.checked ? colorData[colorData.length-1].code : "");
+    let currentValue = inputEl.value + (addResetCheckbox.checked ? colorData[colorData.length - 1].code : "");
     outputEl.value = replaceWithControlChar(currentValue);
-    updatePreview(outputEl.value.slice(0,32));
+    updatePreview(outputEl.value.slice(0, 32));
     validateLength();
 }
 
 inputEl.addEventListener("input", handleInputEvent);
 addResetCheckbox.addEventListener("click", handleInputEvent);
-generateNameButton.addEventListener("click",generateName);
-copyToClipboardButton.addEventListener("click",copyToClipboard);
+generateNameButton.addEventListener("click", generateName);
+copyToClipboardButton.addEventListener("click", copyToClipboard);
 
-
-function copyToClipboard(){    
+function copyToClipboard() {
     navigator.clipboard.writeText(outputEl.value).then(() => {
         document.getElementById("toast-text").textContent = "Copied to clipboard!";
         toast.show();
     }, () => {
         document.getElementById("toast-text").textContent = "Could not copy to clipboard :(";
         toast.show();
-        
-    });   
-
+    });
 }
+
 let shortNamesList = ship_names.filter(name => !(name.length > MAX_LENGTH_NAME));
 let newList = shortNamesList.concat([]);
 
@@ -680,7 +690,7 @@ function generateName() {
     const randomIndex = Math.floor(Math.random() * newList.length);
     const name = newList[randomIndex];
     newList = newList.filter(item => item !== name);
-    if(newList.length === 0) newList = ship_names.concat([]);
+    if (newList.length === 0) newList = ship_names.concat([]);
     generateNameButton.textContent = `Generate Name (${newList.length}/${shortNamesList.length})`
     inputEl.value = name;
     handleInputEvent();
