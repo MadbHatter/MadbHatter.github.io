@@ -641,7 +641,7 @@ function replaceWithControlChar(input) {
 
 function updatePreview(input) {
     previewEl.innerHTML = colorData.reduce((acc, data) =>
-        acc.replaceAll(DC1_CHAR + data.stellarisCode, `<span style='color: ${data.rgb}'>`), input) + '</span>';
+        acc.replaceAll(DC1_CHAR + data.stellarisCode.charAt(0), `<span style='color: ${data.rgb}'>`), input) + '</span>';
 }
 
 function validateLength() {
@@ -670,9 +670,7 @@ function copyToClipboard(){
         document.getElementById("toast-text").textContent = "Could not copy to clipboard :(";
         toast.show();
         
-    })
-
-    
+    });   
 
 }
 let shortNamesList = ship_names.filter(name => !(name.length > MAX_LENGTH_NAME));
@@ -692,7 +690,6 @@ function init() {
     addTable();
     colorData.forEach(addButton);
     handleInputEvent(); // To set initial state   
-    
 }
 
 init();
