@@ -495,7 +495,7 @@ const colorData = [
         stellarisCode: ['E'],
         color: 'Teal',
         vanillaUse: 'Large chunks of text',
-        code: '{T}',
+        code: '{TL}',
         rgb: 'rgb(135, 255, 207)'
     },
     {
@@ -544,7 +544,7 @@ const colorData = [
         stellarisCode: ['d'],
         color: 'Tan',
         vanillaUse: 'Destiny trait',
-        code: '{T}',
+        code: '{TN}',
         rgb: 'rgb(255, 221, 122)'
     },
     {
