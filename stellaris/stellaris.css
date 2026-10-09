@@ -1,0 +1,304 @@
+/* Stellaris helper page. Builds on ../assets/base.css. */
+
+.tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.tab {
+    padding: 4px 10px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    color: var(--fg-muted);
+    text-decoration: none;
+}
+
+.tab:hover {
+    color: var(--accent);
+}
+
+.tab[aria-selected="true"] {
+    border-color: var(--accent);
+    background: var(--selection);
+    color: var(--accent);
+}
+
+.panel[hidden] {
+    display: none;
+}
+
+.panel > .pane + .pane {
+    margin-top: 28px;
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: #0b0f14;
+    color: var(--chip, #eee);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.chip:hover {
+    border-color: var(--chip, var(--accent));
+}
+
+.chip .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    background: var(--chip, transparent);
+    border: 1px solid rgb(255 255 255 / .25);
+}
+
+.chip .code {
+    color: #6b7686;
+}
+
+.hint {
+    margin: 8px 0 16px;
+    color: var(--fg-dim);
+    font-size: 13px;
+}
+
+.field {
+    display: block;
+    margin-bottom: 14px;
+}
+
+.field .label {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--fg-muted);
+    font-size: 13px;
+}
+
+.field .label::before {
+    content: "> ";
+    color: var(--accent);
+}
+
+input[type="text"],
+input[type="search"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--fg);
+    font: inherit;
+}
+
+input[type="text"]:focus,
+input[type="search"]:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+input[readonly] {
+    color: var(--fg-muted);
+}
+
+.check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: -4px 0 16px;
+    color: var(--fg-muted);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.check input {
+    accent-color: var(--accent);
+}
+
+.output-row {
+    display: flex;
+    gap: 8px;
+}
+
+/* Stellaris text is drawn on a dark UI, so keep the preview dark in both themes. */
+.preview-box {
+    min-height: 2.6em;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: #0b0f14;
+    color: rgb(238, 238, 238);
+    font-size: 18px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    user-select: none;
+}
+
+.preview-box .cut {
+    color: #5c6675;
+    text-decoration: line-through;
+}
+
+.meter {
+    height: 4px;
+    margin-top: -6px;
+    border-radius: 2px;
+    background: var(--bg-raised);
+    overflow: hidden;
+}
+
+.meter span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--accent);
+    transition: width .15s;
+}
+
+.meter.over span {
+    background: var(--danger);
+}
+
+.length {
+    margin: 6px 0 16px;
+    color: var(--fg-dim);
+    font-size: 13px;
+}
+
+.length.over {
+    color: var(--warn);
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.actions .shortcut {
+    margin-left: auto;
+    font-size: 13px;
+}
+
+/* Collapsible reference pane */
+.reference > summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.reference > summary::-webkit-details-marker {
+    display: none;
+}
+
+.reference > summary::before {
+    content: "[+] ";
+}
+
+.reference[open] > summary::before {
+    content: "[-] ";
+}
+
+.reference:not([open]) {
+    padding: 10px 16px 6px;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+th,
+td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    color: var(--fg-muted);
+    font-weight: 600;
+}
+
+td.color-name {
+    background: #0b0f14;
+    white-space: nowrap;
+}
+
+/* Console commands */
+.search {
+    max-width: 420px;
+}
+
+.commands {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+}
+
+.command {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-2);
+    border-radius: var(--radius);
+    background: var(--bg);
+}
+
+.command[hidden] {
+    display: none;
+}
+
+.command h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+}
+
+.command p {
+    margin: 4px 0 0;
+    font-size: 14px;
+}
+
+.code-block {
+    position: relative;
+}
+
+.command pre {
+    margin: 0;
+    padding: 10px 70px 10px 12px;
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    overflow-x: auto;
+    font-size: 13px;
+}
+
+.code-block .btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+}
+
+@media (max-width: 560px) {
+    .topbar .crumbs {
+        flex-basis: 100%;
+    }
+
+    .actions .shortcut {
+        display: none;
+    }
+}
