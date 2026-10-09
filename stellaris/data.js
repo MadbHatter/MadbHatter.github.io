@@ -413,293 +413,33 @@ const ship_names = [
     "Experiencing A Significant Gravitas Shortfall GSV"
 ];
 
+// Text colors, from https://stellaris.paradoxwikis.com/Localisation_modding
+//   char:    the character Stellaris reads after the control character (unique per color)
+//   alsoChar: other characters Stellaris treats as the same color
+//   codes:   what you type in the helper, matched case-insensitively.
+//            The first is the readable name; the rest are the older short codes, kept so
+//            existing names still work. Every code must be unique (checked on load).
 const colorData = [
-    {
-        stellarisCode: ['W'],
-        color: 'White',
-        vanillaUse: 'Diplomatic Attitudes',
-        code: '{W}',
-        rgb: 'rgb(255, 255, 255)'
-    },
-    {
-        stellarisCode: ['T'],
-        color: 'Light Grey',
-        vanillaUse: 'Standard color of all text',
-        code: '{LGrey}',
-        rgb: 'rgb(238, 238, 238)'
-    },
-    {
-        stellarisCode: ['g'],
-        color: 'Dark Grey',
-        vanillaUse: 'Disabled / inactive',
-        code: '{DGrey}',
-        rgb: 'rgb(128, 128, 128)'
-    },
-    {
-        stellarisCode: ['L'],
-        color: 'Brown / Kaki',
-        vanillaUse: 'Lore, back story, role playing elements',
-        code: '{B}',
-        rgb: 'rgb(195, 176, 145)'
-    },
-    {
-        stellarisCode: ['P'],
-        color: 'Light Dirty Pink',
-        vanillaUse: 'Highlighting of Aggressive text in descriptions and event text',
-        code: '{LDP}',
-        rgb: 'rgb(225, 110, 110)'
-    },
-    {
-        stellarisCode: ['R'],
-        color: 'Red',
-        vanillaUse: 'Negative modifiers',
-        code: '{R}',
-        rgb: 'rgb(252, 86, 70)'
-    },
-    {
-        stellarisCode: ['S'],
-        color: 'Dark Orange',
-        vanillaUse: 'Subtle highlighted text',
-        code: '{DO}',
-        rgb: 'rgb(228, 156, 42)'
-    },
-    {
-        stellarisCode: ['H', 'K'],
-        color: 'Mango / Orange',
-        vanillaUse: 'Highlighted text',
-        code: '{O}',
-        rgb: 'rgb(251, 170, 41)'
-    },
-    {
-        stellarisCode: ['Y', 'I'],
-        color: 'Yellow',
-        vanillaUse: 'Sub-optimal or Neutral modifiers',
-        code: '{Y}',
-        rgb: 'rgb(247, 252, 52)'
-    },
-    {
-        stellarisCode: ['G'],
-        color: 'Green',
-        vanillaUse: 'Positive modifiers',
-        code: '{G}',
-        rgb: 'rgb(41, 225, 38)'
-    },
-    {
-        stellarisCode: ['V'],
-        color: 'Dark Green',
-        vanillaUse: 'Event text',
-        code: '{DG}',
-        rgb: 'rgb(76, 138, 113)'
-    },
-    {
-        stellarisCode: ['E'],
-        color: 'Teal',
-        vanillaUse: 'Large chunks of text',
-        code: '{TL}',
-        rgb: 'rgb(135, 255, 207)'
-    },
-    {
-        stellarisCode: ['C'],
-        color: 'Cyan',
-        vanillaUse: 'Concept text that generates another tooltip',
-        code: '{C}',
-        rgb: 'rgb(33, 232, 208)'
-    },
-    {
-        stellarisCode: ['B'],
-        color: 'Cyan-Blue',
-        vanillaUse: 'Event effects that affect pops',
-        code: '{CB}',
-        rgb: 'rgb(51, 167, 255)'
-    },
-    {
-        stellarisCode: ['M'],
-        color: 'Purple',
-        vanillaUse: 'Rare technologies',
-        code: '{P}',
-        rgb: 'rgb(163, 53, 238)'
-    },
-    {
-        stellarisCode: ['_'],
-        color: 'Magenta',
-        vanillaUse: 'Placeholders',
-        code: '{M}',
-        rgb: 'rgb(255, 0, 255)'
-    },
-    {
-        stellarisCode: ['c'],
-        color: 'Blue-Green',
-        vanillaUse: 'Leader trait',
-        code: '{BG}',
-        rgb: 'rgb(60, 208, 146)'
-    },
-    {
-        stellarisCode: ['v'],
-        color: 'Faded Green',
-        vanillaUse: 'Veteran leader trait',
-        code: '{FG}',
-        rgb: 'rgb(139, 174, 162)'
-    },
-    {
-        stellarisCode: ['d'],
-        color: 'Tan',
-        vanillaUse: 'Destiny trait',
-        code: '{TN}',
-        rgb: 'rgb(255, 221, 122)'
-    },
-    {
-        stellarisCode: ['r'],
-        color: 'Light Purple',
-        vanillaUse: 'Renowned',
-        code: '{LP}',
-        rgb: 'rgb(163, 130, 255)'
-    },
-    {
-        stellarisCode: ['l'],
-        color: 'Light Green',
-        vanillaUse: 'Legendary',
-        code: '{LG}',
-        rgb: 'rgb(178, 236, 104)'
-    },
-    {
-        stellarisCode: ['!'],
-        color: 'Default',
-        vanillaUse: 'Return to color before last color change',
-        code: '{RESET}',
-        rgb: ''
-    }
+    { char: 'W', alsoChar: [], color: 'White', codes: ['white', 'W'], rgb: 'rgb(255, 255, 255)', vanillaUse: 'Diplomatic Attitudes' },
+    { char: 'T', alsoChar: [], color: 'Light Grey', codes: ['lightgrey', 'LGrey'], rgb: 'rgb(238, 238, 238)', vanillaUse: 'Standard color of all text' },
+    { char: 'g', alsoChar: [], color: 'Dark Grey', codes: ['darkgrey', 'DGrey'], rgb: 'rgb(128, 128, 128)', vanillaUse: 'Disabled / inactive' },
+    { char: 'L', alsoChar: [], color: 'Brown / Khaki', codes: ['brown', 'B'], rgb: 'rgb(195, 176, 145)', vanillaUse: 'Lore, back story, role playing elements' },
+    { char: 'P', alsoChar: [], color: 'Light Dirty Pink', codes: ['pink', 'LDP'], rgb: 'rgb(225, 110, 110)', vanillaUse: 'Highlighting of Aggressive text in descriptions and event text' },
+    { char: 'R', alsoChar: [], color: 'Red', codes: ['red', 'R'], rgb: 'rgb(252, 86, 70)', vanillaUse: 'Negative modifiers' },
+    { char: 'S', alsoChar: [], color: 'Dark Orange', codes: ['darkorange', 'DO'], rgb: 'rgb(228, 156, 42)', vanillaUse: 'Subtle highlighted text' },
+    { char: 'H', alsoChar: ['K'], color: 'Mango / Orange', codes: ['orange', 'O'], rgb: 'rgb(251, 170, 41)', vanillaUse: 'Highlighted text' },
+    { char: 'Y', alsoChar: ['I'], color: 'Yellow', codes: ['yellow', 'Y'], rgb: 'rgb(247, 252, 52)', vanillaUse: 'Sub-optimal or Neutral modifiers' },
+    { char: 'G', alsoChar: [], color: 'Green', codes: ['green', 'G'], rgb: 'rgb(41, 225, 38)', vanillaUse: 'Positive modifiers' },
+    { char: 'V', alsoChar: [], color: 'Dark Green', codes: ['darkgreen', 'DG'], rgb: 'rgb(76, 138, 113)', vanillaUse: 'Event text' },
+    { char: 'E', alsoChar: [], color: 'Teal', codes: ['teal', 'TL'], rgb: 'rgb(135, 255, 207)', vanillaUse: 'Large chunks of text' },
+    { char: 'C', alsoChar: [], color: 'Cyan', codes: ['cyan', 'C'], rgb: 'rgb(33, 232, 208)', vanillaUse: 'Concept text that generates another tooltip' },
+    { char: 'B', alsoChar: [], color: 'Cyan-Blue', codes: ['blue', 'CB'], rgb: 'rgb(51, 167, 255)', vanillaUse: 'Event effects that affect pops' },
+    { char: 'M', alsoChar: [], color: 'Purple', codes: ['purple', 'P'], rgb: 'rgb(163, 53, 238)', vanillaUse: 'Rare technologies' },
+    { char: '_', alsoChar: [], color: 'Magenta', codes: ['magenta', 'M'], rgb: 'rgb(255, 0, 255)', vanillaUse: 'Placeholders' },
+    { char: 'c', alsoChar: [], color: 'Blue-Green', codes: ['bluegreen', 'BG'], rgb: 'rgb(60, 208, 146)', vanillaUse: 'Leader trait' },
+    { char: 'v', alsoChar: [], color: 'Faded Green', codes: ['fadedgreen', 'FG'], rgb: 'rgb(139, 174, 162)', vanillaUse: 'Veteran leader trait' },
+    { char: 'd', alsoChar: [], color: 'Tan', codes: ['tan', 'TN'], rgb: 'rgb(255, 221, 122)', vanillaUse: 'Destiny trait' },
+    { char: 'r', alsoChar: [], color: 'Light Purple', codes: ['lightpurple', 'LP'], rgb: 'rgb(163, 130, 255)', vanillaUse: 'Renowned' },
+    { char: 'l', alsoChar: [], color: 'Light Green', codes: ['lightgreen', 'LG'], rgb: 'rgb(178, 236, 104)', vanillaUse: 'Legendary' },
+    { char: '!', alsoChar: [], color: 'Default', codes: ['reset'], rgb: '', vanillaUse: 'Return to color before last color change' },
 ];
-
-
-const MAX_LENGTH_NAME = 32;
-const DC1_CHAR = '';
-const inputEl = document.getElementById("input");
-const outputEl = document.getElementById("output");
-const previewEl = document.getElementById("preview");
-const tableContainer = document.getElementById("table-content");
-const colorButtonsContainer = document.getElementById("color-buttons");
-const lengthWarningEl = document.getElementById("length-warning");
-const addResetCheckbox = document.getElementById("add-reset");
-
-const generateNameButton = document.getElementById("generate-name");
-const copyToClipboardButton = document.getElementById("copy-to-clipboard");
-const toastTrigger = document.getElementById("liveToastBtn")
-const toastLiveExample = document.getElementById("liveToast")
-const toast = new bootstrap.Toast(toastLiveExample)
-
-// Utilize modern JavaScript features for cleaner code
-function createElement(type, attributes, ...children) {
-    const el = document.createElement(type);
-    for (let attr in attributes) {
-        el[attr] = attributes[attr];
-    }
-    children.forEach(child => {
-        if (typeof child === 'string') el.appendChild(document.createTextNode(child));
-        else el.appendChild(child);
-    });
-    return el;
-}
-
-function addTable() {
-    const headers = ['Stellaris Code (do not use)', 'Color', 'Vanilla Use', 'Code', 'Color Code'];
-    const table = createElement('table', { className: 'table table-sm' },
-        createElement('thead', {},
-            createElement('tr', {}, ...headers.map(header => createElement('th', {}, header)))
-        ),
-        createElement('tbody', {}, ...colorData.map(data =>
-            createElement('tr', {}, ...['stellarisCode', 'color', 'vanillaUse', 'code', 'rgb'].map(property =>
-                createElement('td', {}, property === 'color' ?
-                    createElement('span', { textContent: data[property], style: `color: ${data.rgb}` }) :
-                    property === 'stellarisCode' ?
-                        data[property].join(' / ') :
-                        data[property])
-            ))
-        ))
-    );
-    tableContainer.appendChild(table);
-}
-
-function addButton(color) {
-    const button = createElement('button', {
-        type: 'button',
-        className: 'btn btn-outline-primary',
-        textContent: color.color,
-        style: `color: ${color.rgb}`,
-        onclick: () => insertCodeAtCursor(color.code)
-    });
-    colorButtonsContainer.appendChild(button);
-}
-
-function insertCodeAtCursor(code) {
-    const { selectionStart } = inputEl;
-    inputEl.value = inputEl.value.slice(0, selectionStart) + code + inputEl.value.slice(selectionStart);
-    handleInputEvent();
-}
-
-function replaceWithControlChar(input) {
-    return colorData.reduce((outputText, data) => {
-        let modifiedText = outputText;
-        data.stellarisCode.forEach(code => {
-            modifiedText = modifiedText.replaceAll(data.code, DC1_CHAR + code);
-        });
-        return modifiedText;
-    }, input);
-}
-
-function updatePreview(input) {
-    previewEl.innerHTML = colorData.reduce((acc, data) => {
-        let modifiedAcc = acc;
-        data.stellarisCode.forEach(code => {
-            modifiedAcc = modifiedAcc.replaceAll(DC1_CHAR + code, `<span style='color: ${data.rgb}'>`);
-        });
-        return modifiedAcc;
-    }, input) + '</span>';
-}
-
-function validateLength() {
-    lengthWarningEl.textContent = outputEl.value.length > MAX_LENGTH_NAME ?
-        `Name has ${outputEl.value.length} Characters. Max length is ${MAX_LENGTH_NAME} characters. Output is getting cut off.` : '';
-}
-
-function handleInputEvent() {
-    let currentValue = inputEl.value + (addResetCheckbox.checked ? colorData[colorData.length - 1].code : "");
-    outputEl.value = replaceWithControlChar(currentValue);
-    updatePreview(outputEl.value.slice(0, 32));
-    validateLength();
-}
-
-inputEl.addEventListener("input", handleInputEvent);
-addResetCheckbox.addEventListener("click", handleInputEvent);
-generateNameButton.addEventListener("click", generateName);
-copyToClipboardButton.addEventListener("click", copyToClipboard);
-
-function copyToClipboard() {
-    navigator.clipboard.writeText(outputEl.value).then(() => {
-        document.getElementById("toast-text").textContent = "Copied to clipboard!";
-        toast.show();
-    }, () => {
-        document.getElementById("toast-text").textContent = "Could not copy to clipboard :(";
-        toast.show();
-    });
-}
-
-let shortNamesList = ship_names.filter(name => !(name.length > MAX_LENGTH_NAME));
-let newList = shortNamesList.concat([]);
-
-function generateName() {
-    const randomIndex = Math.floor(Math.random() * newList.length);
-    const name = newList[randomIndex];
-    newList = newList.filter(item => item !== name);
-    if (newList.length === 0) newList = ship_names.concat([]);
-    generateNameButton.textContent = `Generate Name (${newList.length}/${shortNamesList.length})`
-    inputEl.value = name;
-    handleInputEvent();
-}
-
-function init() {
-    addTable();
-    colorData.forEach(addButton);
-    handleInputEvent(); // To set initial state   
-}
-
-init();

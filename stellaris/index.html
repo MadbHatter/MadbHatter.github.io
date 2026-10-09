@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <meta name="description" content="Color-code names for Stellaris and look up handy console commands.">
+    <title>Stellaris Helper</title>
+    <link href="../assets/base.css" rel="stylesheet">
+    <link href="stellaris.css" rel="stylesheet">
+</head>
+
+<body>
+    <main class="shell">
+        <header class="topbar">
+            <span class="crumbs prompt"><a href="../">~/madbhatter</a>/stellaris-helper</span>
+            <nav class="tabs" role="tablist" aria-label="Sections">
+                <a class="tab" role="tab" id="tab-colors" href="#colors" aria-controls="colors">[1] color names</a>
+                <a class="tab" role="tab" id="tab-console" href="#console" aria-controls="console">[2] console</a>
+            </nav>
+        </header>
+
+        <!-- Color name helper -->
+        <section id="colors" class="panel" role="tabpanel" aria-labelledby="tab-colors">
+            <div class="pane">
+                <h1 class="pane-title">color name editor</h1>
+
+                <div class="chips" id="color-buttons" role="toolbar" aria-label="Insert color code"></div>
+                <p class="color-use" id="color-use" aria-live="polite">Hover a color to see what the game uses it for.</p>
+                <p class="hint">Click a color to insert its code at the cursor. Select text first to wrap it in that
+                    color. Codes are case-insensitive, and the old short codes like {R} still work.</p>
+                <p class="data-error" id="data-error" role="alert" hidden></p>
+
+                <label class="field">
+                    <span class="label">input</span>
+                    <input id="input" type="text" autocomplete="off" spellcheck="false"
+                        placeholder="{red}My {blue}Awesome {yellow}Name">
+                </label>
+
+                <label class="check">
+                    <input checked id="add-reset" type="checkbox">
+                    <span>Automatically add {reset} at the end (only when the name uses a color)</span>
+                </label>
+
+                <label class="check">
+                    <input checked id="minify" type="checkbox">
+                    <span>Minify: drop codes that change nothing (repeats, unused colors, extra resets)</span>
+                </label>
+
+                <div class="field">
+                    <span class="label">preview</span>
+                    <div class="preview-box" aria-live="polite"><span id="preview"></span></div>
+                </div>
+
+                <label class="field">
+                    <span class="label">output <span class="muted">(paste as-is into Stellaris)</span></span>
+                    <span class="output-row">
+                        <input id="output" type="text" readonly spellcheck="false">
+                        <button id="copy-to-clipboard" type="button" class="btn primary">copy</button>
+                    </span>
+                </label>
+                <div class="meter" id="meter" aria-hidden="true"><span id="meter-bar"></span></div>
+                <p class="length" id="length-info"></p>
+                <p class="length over" id="unknown-info" hidden></p>
+                <div class="length notes" id="minify-info" hidden></div>
+
+                <div class="actions">
+                    <button id="generate-name" type="button" class="btn">generate name</button>
+                    <label class="inline-select"><span class="muted">from</span>
+                        <select id="name-list" aria-label="Name list"></select>
+                    </label>
+                    <button id="clear-input" type="button" class="btn">clear</button>
+                    <span class="muted shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> copies</span>
+                </div>
+            </div>
+
+            <details class="pane reference" id="lists-pane">
+                <summary class="pane-title">name lists</summary>
+                <p class="hint">Pick a list above to generate names from it. Your lists are saved in this
+                    browser. Names can use color codes, and any that end up longer than 32 characters are skipped.</p>
+                <div class="actions">
+                    <button id="list-new" type="button" class="btn">new list</button>
+                    <button id="list-import" type="button" class="btn">import .txt</button>
+                    <button id="list-export" type="button" class="btn">export .txt</button>
+                    <button id="list-delete" type="button" class="btn">delete list</button>
+                    <input id="list-file" type="file" accept=".txt,text/plain" hidden>
+                </div>
+                <label class="field list-field">
+                    <span class="label" id="list-label">names, one per line</span>
+                    <textarea id="list-editor" rows="10" spellcheck="false"></textarea>
+                </label>
+                <p class="length" id="list-info"></p>
+            </details>
+
+            <details class="pane reference">
+                <summary class="pane-title">color code reference</summary>
+                <div class="table-wrap" id="table-content"></div>
+                <p class="muted">Palette from the <a href="https://stellaris.paradoxwikis.com/Localisation_modding">Stellaris
+                        wiki</a>.</p>
+            </details>
+        </section>
+
+        <!-- Console commands -->
+        <section id="console" class="panel" role="tabpanel" aria-labelledby="tab-console" hidden>
+            <div class="pane">
+                <h2 class="pane-title">console commands</h2>
+                <label class="field search">
+                    <span class="label">filter <kbd>/</kbd></span>
+                    <input id="command-search" type="search" autocomplete="off" placeholder="pop, flag, l-gate…">
+                </label>
+
+                <!-- Add a command by copying one <article> below. -->
+                <div class="commands" id="commands">
+                    <article class="command">
+                        <h3>Kill N random pops on the current planet</h3>
+                        <pre><code>effect this = { while = { count = N random_owned_pop = { kill_pop = yes } } }</code></pre>
+                        <p><span class="muted">args:</span> Replace N with the number of pops to kill.</p>
+                        <p><span class="muted">source:</span> <a
+                                href="https://www.reddit.com/r/Stellaris/comments/16za69i/anyway_to_use_commands_to_kill_my_own_pops/">Reddit</a>
+                        </p>
+                    </article>
+                    <article class="command">
+                        <h3>Delete the selected megastructure</h3>
+                        <pre><code>effect remove_megastructure = this</code></pre>
+                        <p><span class="muted">args:</span> None</p>
+                        <p><span class="muted">source:</span> Don't remember</p>
+                    </article>
+                    <article class="command">
+                        <h3>Clear a flag from the planet</h3>
+                        <pre><code>effect this = {remove_planet_flag = FLAG}</code></pre>
+                        <p><span class="muted">args:</span> Replace FLAG with the id of the flag to remove.</p>
+                        <p><span class="muted">source:</span> Selfmade</p>
+                    </article>
+                    <article class="command">
+                        <h3>Show which L-Gate event will appear</h3>
+                        <pre><code>effect switch = { trigger = has_global_flag
+    gray_goo_crisis_set = { custom_tooltip = "Gray Tempest" }
+    dragon_season       = { custom_tooltip = "L-Drake" }
+    gray_goo_empire_set = { custom_tooltip = "Dessanu Consonance" }
+    default             = { custom_tooltip = "Gray" }
+}</code></pre>
+                        <p><span class="muted">args:</span> None</p>
+                        <p><span class="muted">source:</span> <a
+                                href="https://www.reddit.com/r/Stellaris/comments/15eng60/commands_for_l_gate_tempest/">Reddit</a>
+                        </p>
+                    </article>
+                    <article class="command">
+                        <h3>Set the L-Gate to Gray Tempest</h3>
+                        <pre><code>effect remove_global_flag = dragon_season remove_global_flag = gray_goo_empire_set set_global_flag = gray_goo_crisis_set</code></pre>
+                        <p><span class="muted">args:</span> None</p>
+                        <p><span class="muted">source:</span> <a
+                                href="https://www.reddit.com/r/Stellaris/comments/15eng60/commands_for_l_gate_tempest/">Reddit</a>
+                        </p>
+                    </article>
+                </div>
+                <p class="muted" id="no-results" hidden>No commands match that filter.</p>
+                <p><a href="https://stellaris.paradoxwikis.com/Effects">See the Stellaris wiki for more effects</a></p>
+            </div>
+        </section>
+
+        <footer class="statusbar">
+            <span><kbd>1</kbd><kbd>2</kbd> switch tab (outside inputs)</span>
+            <span><kbd>/</kbd> filter commands</span>
+            <span>your last input is saved in this browser</span>
+        </footer>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="data.js"></script>
+    <script src="convert.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
