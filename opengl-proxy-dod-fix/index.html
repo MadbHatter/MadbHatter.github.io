@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <meta name="description"
+        content="Why Darkest of Days renders a black screen on modern AMD GPUs, and the opengl32.dll proxy that fixes it.">
+    <title>Darkest of Days AMD Fix</title>
+    <script src="../assets/crumbs.js" defer></script>
+    <link href="../assets/base.css" rel="stylesheet">
+    <link href="glfix.css" rel="stylesheet">
+</head>
+
+<body>
+    <main class="shell">
+        <header class="topbar">
+            <span class="crumbs prompt"><a href="../">~/madbhatter</a>/opengl-proxy-dod-fix</span>
+            <nav class="jump" aria-label="Sections">
+                <a href="#bug">[1] bug</a>
+                <a href="#fix">[2] fix</a>
+                <a href="#install">[3] install</a>
+            </nav>
+        </header>
+
+        <h1 class="title">Darkest of Days: black screen on modern AMD GPUs</h1>
+        <p class="lede">The menu works, the level loads, the audio plays, and the screen stays black. The cause is one
+            piece of OpenGL state that AMD's driver forgets to restore. A small proxy <code>opengl32.dll</code>
+            restores it, without touching the game.</p>
+
+        <div class="summary">
+            <div><span class="k">symptom</span> black screen with audio as soon as a level starts</div>
+            <div><span class="k">affects</span> AMD GCN and newer (tested: RX 7900 XTX, driver 32.0.31041.1004)</div>
+            <div><span class="k">cause</span> <code>glPopAttrib</code> leaves <code>GL_DEPTH_BOUNDS_TEST_EXT</code>
+                switched on</div>
+            <div><span class="k">fix</span> drop <code>opengl32.dll</code> next to <code>darkestofdays.exe</code></div>
+        </div>
+
+        <p class="actions">
+            <a class="btn primary" href="https://github.com/MadbHatter/opengl-proxy-dod-fix/raw/main/dist/opengl32.dll">↓
+                download opengl32.dll</a>
+            <a class="btn" href="https://github.com/MadbHatter/opengl-proxy-dod-fix">source on GitHub</a>
+        </p>
+
+        <!-- The bug -->
+        <section id="bug" class="pane">
+            <h2 class="pane-title">[1] the bug</h2>
+
+            <p>When a level starts, the game draws a lighting pass inside a save/restore pair:</p>
+            <pre class="code"><span class="c-fn">glPushAttrib</span>(GL_POLYGON_BIT | <span class="c-hl">GL_ENABLE_BIT</span> | GL_SCISSOR_BIT);
+<span class="c-fn">glEnable</span>(GL_DEPTH_BOUNDS_TEST_EXT);
+<span class="c-fn">glDepthBoundsEXT</span>(<span class="c-num">0.99944</span>, <span class="c-num">0.99948</span>);
+<span class="c-dim">... draw ...</span>
+<span class="c-fn">glPopAttrib</span>();   <span class="c-dim">// must switch the depth bounds test off again</span></pre>
+
+            <p>The <a href="https://registry.khronos.org/OpenGL/extensions/EXT/EXT_depth_bounds_test.txt">EXT_depth_bounds_test
+                    spec</a> puts the enable flag in the <code>GL_ENABLE_BIT</code> group, so the pop has to turn the
+                test off. Here is the depth bounds test state after each call, on a driver that follows the spec and on
+                AMD's current driver:</p>
+
+            <ol class="trace" aria-label="Depth bounds test state per call">
+                <li class="trace-head" aria-hidden="true">
+                    <span>call</span><span>spec</span><span>AMD</span>
+                </li>
+                <li>
+                    <code>glPushAttrib(… GL_ENABLE_BIT …)</code>
+                    <span class="state off" data-who="spec">off, saved</span>
+                    <span class="state off" data-who="AMD">off, saved</span>
+                </li>
+                <li>
+                    <code>glEnable(GL_DEPTH_BOUNDS_TEST_EXT)</code>
+                    <span class="state on" data-who="spec">on</span>
+                    <span class="state on" data-who="AMD">on</span>
+                </li>
+                <li>
+                    <code>glDepthBoundsEXT(0.99944, 0.99948)</code>
+                    <span class="state on" data-who="spec">on, tiny range</span>
+                    <span class="state on" data-who="AMD">on, tiny range</span>
+                </li>
+                <li>
+                    <code>draw lighting pass</code>
+                    <span class="state ok" data-who="spec">drawn</span>
+                    <span class="state ok" data-who="AMD">drawn</span>
+                </li>
+                <li class="diverge">
+                    <code>glPopAttrib()</code>
+                    <span class="state off" data-who="spec">off, restored</span>
+                    <span class="state bad" data-who="AMD">still on</span>
+                </li>
+                <li>
+                    <code>every later draw</code>
+                    <span class="state ok" data-who="spec">drawn</span>
+                    <span class="state bad" data-who="AMD">rejected</span>
+                </li>
+                <li class="trace-end">
+                    <span>result</span>
+                    <span class="state ok" data-who="spec">level renders</span>
+                    <span class="state bad" data-who="AMD">black screen</span>
+                </li>
+            </ol>
+
+            <h3>Why everything gets rejected</h3>
+            <p>The depth bounds test doesn't look at the new fragment. It looks at the depth <em>already stored</em> in
+                the depth buffer, and throws the fragment away if that value lies outside the range. After a clear,
+                every pixel stores 1.0, which sits just outside the range the game left behind:</p>
+
+            <figure class="numline">
+                <svg viewBox="0 0 640 140" role="img"
+                    aria-labelledby="numline-title numline-desc">
+                    <title id="numline-title">Stored depth against the leftover depth bounds</title>
+                    <desc id="numline-desc">A depth axis from 0.9993 to 1.0. The allowed band is 0.99944 to 0.99948. The
+                        stored depth after a clear is 1.0, to the right of the band, so the test fails.</desc>
+                    <line class="axis" x1="30" y1="70" x2="610" y2="70" />
+                    <g class="ticks">
+                        <line x1="30.0" y1="64" x2="30.0" y2="76" />
+                        <line x1="195.7" y1="64" x2="195.7" y2="76" />
+                        <line x1="361.4" y1="64" x2="361.4" y2="76" />
+                        <line x1="527.1" y1="64" x2="527.1" y2="76" />
+                        <line x1="610.0" y1="64" x2="610.0" y2="76" />
+                    </g>
+                    <g class="tick-labels">
+                        <text x="24" y="96" class="first">0.9993</text>
+                        <text x="195.7" y="96" class="minor">0.9995</text>
+                        <text x="361.4" y="96">0.9997</text>
+                        <text x="527.1" y="96" class="minor">0.9999</text>
+                        <text x="610.0" y="96">1.0</text>
+                    </g>
+                    <rect class="band" x="146.0" y="52" width="33.1" height="36" rx="2" />
+                    <text class="band-label" x="140" y="38">allowed: 0.99944 – 0.99948</text>
+                    <circle class="stored" cx="610" cy="70" r="7" />
+                    <text class="stored-label" x="610" y="130">stored 1.0 → outside → discarded</text>
+                </svg>
+            </figure>
+
+            <p>So the colour pass, the depth pre-pass and everything after them are discarded for the rest of the
+                level. Even the depth pre-pass can't write a new depth, which is why the buffer stays at 1.0 forever.
+                The older TeraScale driver (HD 2000 to HD 6000) restored the state correctly, which is why the game
+                used to work.</p>
+
+            <details class="found">
+                <summary>How it was tracked down</summary>
+                <ol>
+                    <li>An apitrace capture of the black screen replays black on the same card, so the problem is in
+                        the GL call stream, not timing or the game's own logic.</li>
+                    <li>All shaders compile and link, and state dumps around draws look sane.</li>
+                    <li>The depth buffer stays at 1.0 even after the colour-masked depth pre-pass, so fragments are being
+                        rejected before they can write depth.</li>
+                    <li>Bisecting the GL state shows <code>GL_DEPTH_BOUNDS_TEST_EXT</code> still enabled after the
+                        matching <code>glPopAttrib</code>.</li>
+                    <li>A standalone 30-line push, enable, pop test reproduces it on the driver for
+                        <code>GL_ENABLE_BIT</code>, <code>GL_DEPTH_BUFFER_BIT</code> and
+                        <code>GL_ALL_ATTRIB_BITS</code>. The bug has been reported to AMD.</li>
+                </ol>
+            </details>
+        </section>
+
+        <!-- The fix -->
+        <section id="fix" class="pane">
+            <h2 class="pane-title">[2] the fix</h2>
+
+            <p>Windows looks for DLLs in the game's folder before System32, so a file named <code>opengl32.dll</code>
+                next to the exe gets loaded in place of the real one. The proxy forwards every call to the real
+                <code>opengl32.dll</code> and wraps only four of them:</p>
+
+            <div class="flow" role="img"
+                aria-label="darkestofdays.exe calls the proxy opengl32.dll in the game folder. 364 exports jump straight to the system opengl32.dll; 4 are wrapped first. The system DLL calls the AMD driver.">
+                <div class="node">
+                    <span class="node-kind">game</span>
+                    <strong>darkestofdays.exe</strong>
+                    <span class="muted">unmodified</span>
+                </div>
+                <div class="edge"><span>every GL call</span></div>
+                <div class="node node-proxy">
+                    <span class="node-kind">proxy, game folder</span>
+                    <strong>opengl32.dll</strong>
+                    <span class="split">
+                        <span class="pass">364 exports: jump straight through</span>
+                        <span class="hook">4 wrapped: glPushAttrib, glPopAttrib, glNewList, glEndList</span>
+                    </span>
+                </div>
+                <div class="edge"><span>forwarded</span></div>
+                <div class="node">
+                    <span class="node-kind">System32</span>
+                    <strong>opengl32.dll</strong>
+                    <span class="muted">→ AMD driver</span>
+                </div>
+            </div>
+
+            <h3>What the wrappers do</h3>
+            <div class="hooks">
+                <ol class="steps">
+                    <li class="steps-title"><code>glPushAttrib(mask)</code></li>
+                    <li>Does <code>mask</code> include <code>GL_ENABLE_BIT</code> or <code>GL_DEPTH_BUFFER_BIT</code>?</li>
+                    <li>If so, read whether the depth bounds test is on, and the range when the depth bit is set.</li>
+                    <li>Push that onto a shadow stack.</li>
+                    <li class="real">Call the real <code>glPushAttrib</code>.</li>
+                </ol>
+                <ol class="steps">
+                    <li class="steps-title"><code>glPopAttrib()</code></li>
+                    <li class="real">Call the real <code>glPopAttrib</code>.</li>
+                    <li>Pop the shadow stack.</li>
+                    <li>Put the range back if it was saved.</li>
+                    <li class="key">Switch the test on or off to match what was saved. This is the line AMD's driver
+                        skips.</li>
+                </ol>
+            </div>
+
+            <ul class="notes">
+                <li><code>glNewList</code>/<code>glEndList</code> are watched so pushes compiled into display lists
+                    don't desync the shadow stack.</li>
+                <li>Pushes past the driver's stack limit are ignored, the same way the driver ignores them.</li>
+                <li>Without <code>GL_EXT_depth_bounds_test</code> the proxy just forwards everything.</li>
+                <li>If a future driver fixes <code>glPopAttrib</code>, the proxy restores what is already correct, so
+                    it can stay installed as a no-op.</li>
+                <li>Set <code>DOD_GLFIX_REAL_OPENGL32</code> to chain it in front of another wrapper such as
+                    apitrace.</li>
+            </ul>
+        </section>
+
+        <!-- Install -->
+        <section id="install" class="pane">
+            <h2 class="pane-title">[3] install</h2>
+            <ol class="install">
+                <li><a href="https://github.com/MadbHatter/opengl-proxy-dod-fix/raw/main/dist/opengl32.dll">Download
+                        <code>opengl32.dll</code></a>, or build it from <code>glfix/</code> with MinGW-w64 (the game is
+                    32-bit, so the DLL must be too).</li>
+                <li>Copy it next to <code>darkestofdays.exe</code>.</li>
+                <li>Play. <code>dod_glfix.log</code> appears next to the exe to confirm the fix is active.</li>
+            </ol>
+            <p class="muted">To uninstall, delete <code>opengl32.dll</code> from the game folder.</p>
+            <pre class="code"><span class="c-dim"># build on Linux (or MSYS2: mingw-w64-i686-gcc)</span>
+sudo apt install gcc-mingw-w64-i686
+glfix/build.sh   <span class="c-dim"># -> glfix/build/opengl32.dll</span></pre>
+        </section>
+
+        <footer class="statusbar">
+            <span><a href="../">← back to projects</a></span>
+            <span><a href="https://github.com/MadbHatter/opengl-proxy-dod-fix">github.com/MadbHatter/opengl-proxy-dod-fix</a></span>
+        </footer>
+    </main>
+</body>
+
+</html>

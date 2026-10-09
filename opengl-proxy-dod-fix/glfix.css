@@ -1,0 +1,569 @@
+/* Page styles for the Darkest of Days AMD fix write-up. Builds on ../assets/base.css. */
+
+:root {
+    --bad: var(--danger);
+    --off: var(--fg-dim);
+}
+
+.jump {
+    display: flex;
+    gap: 14px;
+    font-size: 14px;
+}
+
+.jump a {
+    color: var(--fg-muted);
+    text-decoration: none;
+}
+
+.jump a:hover {
+    color: var(--accent);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+section[id] {
+    scroll-margin-top: 24px;
+}
+
+.title {
+    margin: 18px 0 8px;
+    font-size: clamp(20px, 4vw, 26px);
+    line-height: 1.3;
+    color: var(--fg);
+}
+
+.lede {
+    max-width: 72ch;
+    margin: 0 0 16px;
+    color: var(--fg-muted);
+}
+
+h3 {
+    margin: 24px 0 8px;
+    font-size: 15px;
+    color: var(--accent-2);
+}
+
+h3::before {
+    content: "## ";
+    color: var(--fg-dim);
+}
+
+p,
+li {
+    max-width: 78ch;
+}
+
+:not(pre) > code {
+    padding: 0 .3em;
+    border-radius: 3px;
+    background: var(--bg-raised);
+    font-size: .92em;
+    overflow-wrap: anywhere;
+}
+
+/* key/value summary */
+.summary {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--accent);
+    background: var(--bg-panel);
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.summary .k {
+    display: inline-block;
+    min-width: 9ch;
+    color: var(--accent);
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 16px 0 22px;
+}
+
+.actions .btn {
+    text-decoration: none;
+}
+
+.code {
+    margin: 10px 0 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    overflow-x: auto;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.c-fn {
+    color: var(--accent-2);
+}
+
+.c-num {
+    color: var(--warn);
+}
+
+.c-hl {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.c-dim {
+    color: var(--fg-dim);
+}
+
+/* Call trace: one row per GL call, depth bounds state per driver. */
+.trace {
+    list-style: none;
+    margin: 14px 0 6px;
+    padding: 0;
+    counter-reset: step;
+}
+
+.trace > li {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 15ch 15ch;
+    align-items: center;
+    gap: 10px;
+    max-width: none;
+    padding: 8px 10px 8px 38px;
+}
+
+/* Vertical connector between steps. */
+.trace > li:not(.trace-head)::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    margin-top: -10px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--bg-panel);
+    color: var(--fg-muted);
+    font-size: 11px;
+    line-height: 18px;
+    text-align: center;
+    z-index: 1;
+}
+
+.trace > li:not(.trace-head):not(.trace-end)::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    height: 100%;
+    border-left: 1px dashed var(--border);
+}
+
+.trace > .trace-end::before {
+    content: "=";
+}
+
+.trace-head {
+    color: var(--fg-dim);
+    font-size: 13px;
+    border-bottom: 1px dashed var(--border);
+}
+
+.trace code {
+    background: none !important;
+    padding: 0 !important;
+    color: var(--fg);
+}
+
+.trace .diverge {
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--bad) 10%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--bad) 45%, transparent);
+}
+
+.trace-end {
+    margin-top: 4px;
+    border-top: 1px dashed var(--border);
+    font-weight: 600;
+}
+
+.state {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.state::before {
+    content: "";
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.state.off {
+    color: var(--off);
+}
+
+.state.off::before {
+    background: none;
+    border: 1.5px solid currentColor;
+}
+
+.state.on {
+    color: var(--warn);
+}
+
+.state.ok {
+    color: var(--accent);
+}
+
+.state.bad {
+    color: var(--bad);
+    font-weight: 600;
+}
+
+/* Depth number line */
+.numline {
+    margin: 12px 0;
+    padding: 8px 6px 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+}
+
+.numline svg {
+    display: block;
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    margin: 0 auto;
+    font-family: var(--mono);
+}
+
+.numline .axis,
+.numline .ticks line {
+    stroke: var(--fg-dim);
+    stroke-width: 1.5;
+}
+
+.numline .tick-labels text {
+    fill: var(--fg-muted);
+    font-size: 13px;
+    text-anchor: middle;
+}
+
+.numline .tick-labels .first {
+    text-anchor: start;
+}
+
+.numline .band {
+    fill: color-mix(in srgb, var(--warn) 35%, transparent);
+    stroke: var(--warn);
+}
+
+.numline .band-label {
+    fill: var(--warn);
+    font-size: 14px;
+    text-anchor: start;
+}
+
+.numline .stored {
+    fill: var(--bad);
+}
+
+.numline .stored-label {
+    fill: var(--bad);
+    font-size: 14px;
+    font-weight: 600;
+    text-anchor: end;
+}
+
+details.found {
+    margin-top: 16px;
+    padding: 8px 12px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+}
+
+details.found summary {
+    cursor: pointer;
+    color: var(--accent-2);
+}
+
+details.found ol {
+    margin: 10px 0 4px;
+    padding-left: 22px;
+}
+
+details.found li + li {
+    margin-top: 6px;
+}
+
+/* Proxy flow: game -> proxy -> system DLL. */
+.flow {
+    display: flex;
+    align-items: stretch;
+    margin: 16px 0 6px;
+}
+
+.node {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-raised);
+    font-size: 14px;
+}
+
+.node strong {
+    color: var(--fg);
+}
+
+.node-kind {
+    color: var(--fg-dim);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.node-proxy {
+    flex-grow: 1.6;
+    border-color: var(--accent);
+    background: var(--selection);
+}
+
+.node-proxy strong {
+    color: var(--accent);
+}
+
+.split {
+    display: grid;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 13px;
+}
+
+.split > span {
+    padding: 4px 8px;
+    border-radius: var(--radius);
+    background: var(--bg-panel);
+}
+
+.split .pass {
+    color: var(--fg-muted);
+}
+
+.split .hook {
+    color: var(--warn);
+    border-left: 3px solid var(--warn);
+}
+
+.edge {
+    position: relative;
+    flex: 0 0 74px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edge::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    right: 10px;
+    top: 50%;
+    border-top: 1.5px solid var(--fg-dim);
+}
+
+.edge::after {
+    content: "";
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    margin-top: -5px;
+    border: 5px solid transparent;
+    border-left: 7px solid var(--fg-dim);
+    border-right: 0;
+}
+
+.edge span {
+    position: relative;
+    top: -14px;
+    padding: 0 2px;
+    color: var(--fg-dim);
+    font-size: 11px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* Hook steps */
+.hooks {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    counter-reset: s;
+    font-size: 14px;
+}
+
+.steps li {
+    position: relative;
+    padding: 8px 12px 8px 36px;
+    border-top: 1px dashed var(--border);
+}
+
+.steps li:not(.steps-title)::before {
+    counter-increment: s;
+    content: counter(s) ".";
+    position: absolute;
+    left: 12px;
+    color: var(--fg-dim);
+}
+
+.steps .steps-title {
+    padding-left: 12px;
+    border-top: 0;
+    background: var(--bg-raised);
+    font-weight: 600;
+}
+
+.steps .steps-title code {
+    background: none;
+    color: var(--accent-2);
+}
+
+.steps .real {
+    color: var(--fg-muted);
+}
+
+.steps .key {
+    color: var(--fg);
+    background: var(--selection);
+    box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.notes,
+.install {
+    padding-left: 22px;
+}
+
+.notes li + li,
+.install li + li {
+    margin-top: 6px;
+}
+
+.notes li::marker {
+    color: var(--accent);
+}
+
+@media (max-width: 720px) {
+    .flow {
+        flex-direction: column;
+    }
+
+    .edge {
+        flex-basis: 44px;
+    }
+
+    .edge::before {
+        left: 50%;
+        right: auto;
+        top: 4px;
+        bottom: 10px;
+        border-top: 0;
+        border-left: 1.5px solid var(--fg-dim);
+    }
+
+    .edge::after {
+        right: auto;
+        left: 50%;
+        top: auto;
+        bottom: 3px;
+        margin: 0 0 0 -5px;
+        border: 5px solid transparent;
+        border-top: 7px solid var(--fg-dim);
+        border-bottom: 0;
+    }
+
+    .edge span {
+        top: 50%;
+        transform: translateY(-50%);
+        left: calc(50% + 12px);
+        position: absolute;
+    }
+
+    .hooks {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    /* Stack the two driver columns under each call. */
+    .trace > li {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 4px 10px;
+        padding-right: 4px;
+    }
+
+    .trace .state {
+        flex-wrap: wrap;
+        gap: 0 6px;
+        white-space: normal;
+        font-size: 12px;
+    }
+
+    /* Bigger text and fewer labels so the number line stays readable when scaled down. */
+    .numline .tick-labels text {
+        font-size: 24px;
+    }
+
+    .numline .tick-labels .minor {
+        display: none;
+    }
+
+    .numline .band-label,
+    .numline .stored-label {
+        font-size: 24px;
+    }
+
+    .trace > li > :first-child {
+        grid-column: 1 / -1;
+    }
+
+    .trace .state::after {
+        content: " (" attr(data-who) ")";
+        color: var(--fg-dim);
+        font-weight: 400;
+    }
+
+    .trace-head {
+        display: none !important;
+    }
+
+    .jump {
+        width: 100%;
+    }
+}
