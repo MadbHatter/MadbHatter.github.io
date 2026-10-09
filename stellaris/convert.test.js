@@ -1,4 +1,4 @@
-// Run with: node --test stellaris/
+// Run from the repo root with: node --test
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
