@@ -302,3 +302,65 @@ td.color-name {
         display: none;
     }
 }
+
+.data-error {
+    margin: 0 0 16px;
+    padding: 8px 10px;
+    border: 1px solid var(--danger);
+    border-radius: var(--radius);
+    color: var(--danger);
+    font-size: 13px;
+    white-space: pre-line;
+}
+
+.data-error[hidden],
+.length[hidden] {
+    display: none;
+}
+
+.inline-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+}
+
+select,
+textarea {
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--fg);
+    font: inherit;
+    font-size: 14px;
+}
+
+select:focus,
+textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.list-field {
+    margin-top: 14px;
+}
+
+textarea {
+    display: block;
+    width: 100%;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+textarea[readonly] {
+    color: var(--fg-muted);
+}
+
+.reference + .reference {
+    margin-top: 28px;
+}
+
+.inline-select select {
+    max-width: 260px;
+}

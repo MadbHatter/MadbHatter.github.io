@@ -28,17 +28,18 @@
 
                 <div class="chips" id="color-buttons" role="toolbar" aria-label="Insert color code"></div>
                 <p class="hint">Click a color to insert its code at the cursor. Select text first to wrap it in that
-                    color.</p>
+                    color. Codes are case-insensitive, and the old short codes like {R} still work.</p>
+                <p class="data-error" id="data-error" role="alert" hidden></p>
 
                 <label class="field">
                     <span class="label">input</span>
                     <input id="input" type="text" autocomplete="off" spellcheck="false"
-                        placeholder="{R}My {CB}Awesome {Y}Name">
+                        placeholder="{red}My {blue}Awesome {yellow}Name">
                 </label>
 
                 <label class="check">
                     <input checked id="add-reset" type="checkbox">
-                    <span>Automatically add {RESET} at the end</span>
+                    <span>Automatically add {reset} at the end (only when the name uses a color)</span>
                 </label>
 
                 <div class="field">
@@ -55,13 +56,35 @@
                 </label>
                 <div class="meter" id="meter" aria-hidden="true"><span id="meter-bar"></span></div>
                 <p class="length" id="length-info"></p>
+                <p class="length over" id="unknown-info" hidden></p>
 
                 <div class="actions">
                     <button id="generate-name" type="button" class="btn">generate name</button>
+                    <label class="inline-select"><span class="muted">from</span>
+                        <select id="name-list" aria-label="Name list"></select>
+                    </label>
                     <button id="clear-input" type="button" class="btn">clear</button>
                     <span class="muted shortcut"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> copies</span>
                 </div>
             </div>
+
+            <details class="pane reference" id="lists-pane">
+                <summary class="pane-title">name lists</summary>
+                <p class="hint">Pick a list above to generate names from it. Your lists are saved in this
+                    browser. Names can use color codes, and any that end up longer than 32 characters are skipped.</p>
+                <div class="actions">
+                    <button id="list-new" type="button" class="btn">new list</button>
+                    <button id="list-import" type="button" class="btn">import .txt</button>
+                    <button id="list-export" type="button" class="btn">export .txt</button>
+                    <button id="list-delete" type="button" class="btn">delete list</button>
+                    <input id="list-file" type="file" accept=".txt,text/plain" hidden>
+                </div>
+                <label class="field list-field">
+                    <span class="label" id="list-label">names, one per line</span>
+                    <textarea id="list-editor" rows="10" spellcheck="false"></textarea>
+                </label>
+                <p class="length" id="list-info"></p>
+            </details>
 
             <details class="pane reference">
                 <summary class="pane-title">color code reference</summary>

@@ -4,7 +4,7 @@
 const MAX_LENGTH_NAME = 32;
 const DC1_CHAR = '\u0011'; // Stellaris' color control character
 const STORAGE_KEY = 'stellaris-helper';
-const RESET = colorData[colorData.length - 1];
+const BUILTIN_LIST_ID = 'builtin';
 
 const $ = (id) => document.getElementById(id);
 const inputEl = $('input');
@@ -14,6 +14,8 @@ const addResetCheckbox = $('add-reset');
 const lengthInfoEl = $('length-info');
 const meterEl = $('meter');
 const generateNameButton = $('generate-name');
+const listSelect = $('name-list');
+const listEditor = $('list-editor');
 
 function el(type, props = {}, ...children) {
     const node = Object.assign(document.createElement(type), props);
@@ -21,16 +23,76 @@ function el(type, props = {}, ...children) {
     return node;
 }
 
+// ---- color lookup ----
+
+// Builds the code and character lookups, and reports any code or Stellaris character
+// claimed by two colors. Duplicates used to make one color silently replace another.
+function buildLookup(colors) {
+    const byCode = new Map();
+    const byChar = new Map();
+    const problems = [];
+    for (const c of colors) {
+        for (const ch of [c.char, ...c.alsoChar]) {
+            if (byChar.has(ch)) problems.push(`Stellaris character "${ch}" is used by both ${byChar.get(ch).color} and ${c.color}.`);
+            else byChar.set(ch, c);
+        }
+        for (const code of c.codes) {
+            const key = code.toLowerCase();
+            if (!/^[a-z0-9_-]+$/.test(key)) problems.push(`Code {${code}} (${c.color}) may only use letters, digits, _ and -.`);
+            if (byCode.has(key)) problems.push(`Code {${code}} is used by both ${byCode.get(key).color} and ${c.color}.`);
+            else byCode.set(key, c);
+        }
+    }
+    return { byCode, byChar, problems };
+}
+
+const lookup = buildLookup(colorData);
+const RESET = lookup.byChar.get('!');
+const codeOf = (color) => `{${color.codes[0]}}`;
+
+// Converts {codes} to Stellaris control characters in a single pass, so one code can
+// never be rewritten by another. {§X} passes a raw Stellaris character straight through.
+function toControlChars(input) {
+    const unknown = [];
+    const output = input.replace(/\{([^{}\s]+)\}/g, (match, key) => {
+        if (key.length === 2 && key[0] === '§' && lookup.byChar.has(key[1])) return DC1_CHAR + key[1];
+        const color = lookup.byCode.get(key.toLowerCase());
+        if (color) return DC1_CHAR + color.char;
+        unknown.push(match);
+        return match;
+    });
+    return { output, unknown };
+}
+
+// Converts a name, adding the auto reset when it is turned on and the name uses a color.
+function convert(text) {
+    const result = toControlChars(text);
+    if (addResetCheckbox.checked && result.output.includes(DC1_CHAR) && !result.output.endsWith(DC1_CHAR + '!')) {
+        result.output += DC1_CHAR + '!';
+    }
+    return result;
+}
+
 // ---- storage (best effort; private windows may block it) ----
 
+const state = { input: '', addReset: true, lists: [], selectedList: BUILTIN_LIST_ID };
+
 function load() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        if (typeof saved.input === 'string') state.input = saved.input;
+        if (typeof saved.addReset === 'boolean') state.addReset = saved.addReset;
+        if (Array.isArray(saved.lists)) {
+            state.lists = saved.lists.filter(l => l && typeof l.id === 'string' && typeof l.name === 'string' && Array.isArray(l.names));
+        }
+        if (typeof saved.selectedList === 'string') state.selectedList = saved.selectedList;
+    } catch { /* ignore */ }
 }
 
 function save() {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ input: inputEl.value, addReset: addResetCheckbox.checked }));
-    } catch { /* ignore */ }
+    state.input = inputEl.value;
+    state.addReset = addResetCheckbox.checked;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* ignore */ }
 }
 
 // ---- toast ----
@@ -57,15 +119,16 @@ async function copyText(text, label = 'Copied to clipboard') {
 // ---- color editor ----
 
 function addTable() {
-    const headers = ['Color', 'Code', 'Vanilla use', 'RGB', 'Stellaris char (do not use)'];
+    const headers = ['Color', 'Code', 'Also works', 'Vanilla use', 'RGB', 'Stellaris char'];
     $('table-content').append(el('table', {},
         el('thead', {}, el('tr', {}, ...headers.map(h => el('th', { textContent: h })))),
         el('tbody', {}, ...colorData.map(c => el('tr', {},
             el('td', { className: 'color-name' }, el('span', { textContent: c.color, style: `color: ${c.rgb}` })),
-            el('td', {}, el('code', { textContent: c.code })),
+            el('td', {}, el('code', { textContent: codeOf(c) })),
+            el('td', { textContent: [...c.codes.slice(1).map(code => `{${code}}`), `{§${c.char}}`].join(' ') }),
             el('td', { textContent: c.vanillaUse }),
             el('td', { textContent: c.rgb || '-' }),
-            el('td', { textContent: c.stellarisCode.join(' / ') })
+            el('td', { textContent: [c.char, ...c.alsoChar].join(' / ') })
         )))
     ));
 }
@@ -74,33 +137,24 @@ function addChip(color) {
     const chip = el('button', {
         type: 'button',
         className: 'chip',
-        title: `${color.code} - ${color.vanillaUse}`,
+        title: `${codeOf(color)} - ${color.vanillaUse}`,
         onclick: () => insertCode(color)
-    }, el('span', { className: 'swatch' }), color.color, el('span', { className: 'code', textContent: color.code }));
+    }, el('span', { className: 'swatch' }), color.color, el('span', { className: 'code', textContent: codeOf(color) }));
     if (color.rgb) chip.style.setProperty('--chip', color.rgb);
     $('color-buttons').append(chip);
 }
 
-// Inserts a code at the cursor, or wraps the selected text in code ... {RESET}.
+// Inserts a code at the cursor, or wraps the selected text in code ... {reset}.
 function insertCode(color) {
     const { selectionStart: start, selectionEnd: end, value } = inputEl;
     const selected = value.slice(start, end);
-    const insert = selected && color !== RESET ? color.code + selected + RESET.code : color.code;
+    const insert = selected && color !== RESET ? codeOf(color) + selected + codeOf(RESET) : codeOf(color);
     inputEl.value = value.slice(0, start) + insert + value.slice(end);
     inputEl.focus();
     const caret = start + insert.length;
     inputEl.setSelectionRange(caret, caret);
     update();
 }
-
-function toControlChars(input) {
-    return colorData.reduce(
-        (text, c) => text.replaceAll(c.code, DC1_CHAR + c.stellarisCode[0]),
-        input
-    );
-}
-
-const rgbByChar = new Map(colorData.flatMap(c => c.stellarisCode.map(ch => [ch, c.rgb])));
 
 // Renders the output the way Stellaris would, greying out anything past the limit.
 function renderPreview(output) {
@@ -123,7 +177,7 @@ function renderPreview(output) {
             flush();
             const ch = output[++i];
             if (ch === '!') color = stack.pop() ?? '';
-            else { stack.push(color); color = rgbByChar.get(ch) ?? color; }
+            else { stack.push(color); color = lookup.byChar.get(ch)?.rgb ?? color; }
             continue;
         }
         run += output[i];
@@ -132,8 +186,7 @@ function renderPreview(output) {
 }
 
 function update() {
-    const raw = inputEl.value + (addResetCheckbox.checked && inputEl.value ? RESET.code : '');
-    const output = toControlChars(raw);
+    const { output, unknown } = convert(inputEl.value);
     outputEl.value = output;
     renderPreview(output);
 
@@ -145,18 +198,115 @@ function update() {
     lengthInfoEl.textContent = over
         ? `${n}/${MAX_LENGTH_NAME} characters. Stellaris will cut off everything past ${MAX_LENGTH_NAME} (each color code counts as 2).`
         : `${n}/${MAX_LENGTH_NAME} characters (each color code counts as 2).`;
+
+    const unknownEl = $('unknown-info');
+    unknownEl.hidden = unknown.length === 0;
+    unknownEl.textContent = `Unknown code${unknown.length > 1 ? 's' : ''} left as text: ${[...new Set(unknown)].join(' ')}`;
     save();
 }
 
-const shortNames = ship_names.filter(name => name.length <= MAX_LENGTH_NAME);
-let remainingNames = [...shortNames];
+// ---- name lists ----
+
+const builtinList = { id: BUILTIN_LIST_ID, name: 'Culture ship names (built-in)', names: ship_names };
+const allLists = () => [builtinList, ...state.lists];
+const currentList = () => allLists().find(l => l.id === state.selectedList) ?? builtinList;
+
+// Names that fit once color codes are converted. Recomputed when the list changes.
+let usableNames = [];
+let remainingNames = [];
+
+function refreshNamePool() {
+    const list = currentList();
+    usableNames = [...new Set(list.names.map(n => n.trim()).filter(Boolean))]
+        .filter(name => convert(name).output.length <= MAX_LENGTH_NAME);
+    remainingNames = [...usableNames];
+    const skipped = list.names.filter(n => n.trim()).length - usableNames.length;
+    $('list-info').textContent = `${usableNames.length} usable name${usableNames.length === 1 ? '' : 's'}` +
+        (skipped > 0 ? `, ${skipped} skipped (duplicate or longer than ${MAX_LENGTH_NAME} characters).` : '.');
+    generateNameButton.textContent = 'generate name';
+}
+
+function renderLists() {
+    listSelect.replaceChildren(...allLists().map(l => el('option', { value: l.id, textContent: l.name })));
+    const list = currentList();
+    state.selectedList = list.id;
+    listSelect.value = list.id;
+    const builtin = list === builtinList;
+    listEditor.value = list.names.join('\n');
+    listEditor.readOnly = builtin;
+    $('list-label').textContent = builtin
+        ? 'names (built-in list, read-only; make a new list to add your own)'
+        : `names in "${list.name}", one per line`;
+    $('list-delete').disabled = builtin;
+    refreshNamePool();
+    save();
+}
+
+function addList(name, names) {
+    const id = `list-${Date.now().toString(36)}`;
+    state.lists.push({ id, name, names });
+    state.selectedList = id;
+    renderLists();
+}
 
 function generateName() {
-    if (remainingNames.length === 0) remainingNames = [...shortNames];
+    if (usableNames.length === 0) {
+        toast(`No names in this list fit in ${MAX_LENGTH_NAME} characters`, true);
+        return;
+    }
+    if (remainingNames.length === 0) remainingNames = [...usableNames];
     const [name] = remainingNames.splice(Math.floor(Math.random() * remainingNames.length), 1);
-    generateNameButton.textContent = `generate name (${remainingNames.length}/${shortNames.length})`;
+    generateNameButton.textContent = `generate name (${remainingNames.length}/${usableNames.length})`;
     inputEl.value = name;
     update();
+}
+
+function setupLists() {
+    listSelect.addEventListener('change', () => { state.selectedList = listSelect.value; renderLists(); });
+
+    listEditor.addEventListener('input', () => {
+        const list = currentList();
+        if (list === builtinList) return;
+        list.names = listEditor.value.split('\n');
+        refreshNamePool();
+        save();
+    });
+
+    $('list-new').addEventListener('click', () => {
+        const name = prompt('Name for the new list:', `My names ${state.lists.length + 1}`);
+        if (!name || !name.trim()) return;
+        addList(name.trim(), []);
+        $('lists-pane').open = true;
+        listEditor.focus();
+    });
+
+    $('list-delete').addEventListener('click', () => {
+        const list = currentList();
+        if (list === builtinList || !confirm(`Delete the list "${list.name}"?`)) return;
+        state.lists = state.lists.filter(l => l !== list);
+        state.selectedList = BUILTIN_LIST_ID;
+        renderLists();
+    });
+
+    const fileInput = $('list-file');
+    $('list-import').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async () => {
+        const file = fileInput.files[0];
+        fileInput.value = '';
+        if (!file) return;
+        const names = (await file.text()).split(/\r?\n/).map(n => n.trim()).filter(Boolean);
+        addList(file.name.replace(/\.txt$/i, ''), names);
+        $('lists-pane').open = true;
+        toast(`Imported ${names.length} names`);
+    });
+
+    $('list-export').addEventListener('click', () => {
+        const list = currentList();
+        const blob = new Blob([list.names.join('\n') + '\n'], { type: 'text/plain' });
+        const a = el('a', { href: URL.createObjectURL(blob), download: `${list.name.replace(/[^\w -]+/g, '').trim() || 'names'}.txt` });
+        a.click();
+        URL.revokeObjectURL(a.href);
+    });
 }
 
 // ---- console commands ----
@@ -211,8 +361,8 @@ window.addEventListener('hashchange', showTab);
 // ---- keyboard shortcuts ----
 
 document.addEventListener('keydown', (e) => {
-    const typing = e.target.matches('input, textarea');
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !$('colors').hidden) {
+    const typing = e.target.matches('input, textarea, select');
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !$('colors').hidden && e.target !== listEditor) {
         e.preventDefault();
         copyText(outputEl.value);
         return;
@@ -229,22 +379,30 @@ document.addEventListener('keydown', (e) => {
 // ---- init ----
 
 function init() {
+    if (lookup.problems.length) {
+        console.error('Color data problems:\n' + lookup.problems.join('\n'));
+        $('data-error').hidden = false;
+        $('data-error').textContent = 'Color data has conflicts, so some codes may give the wrong color:\n' + lookup.problems.join('\n');
+    }
+
     addTable();
     colorData.forEach(addChip);
     setupCommands();
 
-    const saved = load();
-    if (typeof saved.input === 'string') inputEl.value = saved.input;
-    if (typeof saved.addReset === 'boolean') addResetCheckbox.checked = saved.addReset;
+    load();
+    inputEl.value = state.input;
+    addResetCheckbox.checked = state.addReset;
 
     inputEl.addEventListener('input', update);
-    addResetCheckbox.addEventListener('change', update);
+    addResetCheckbox.addEventListener('change', () => { update(); refreshNamePool(); });
     generateNameButton.addEventListener('click', generateName);
     $('copy-to-clipboard').addEventListener('click', () => copyText(outputEl.value));
     $('clear-input').addEventListener('click', () => { inputEl.value = ''; inputEl.focus(); update(); });
+    setupLists();
 
     showTab();
     update();
+    renderLists();
 }
 
 init();
