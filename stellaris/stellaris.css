@@ -364,3 +364,30 @@ textarea[readonly] {
 .inline-select select {
     max-width: 260px;
 }
+
+.color-use {
+    min-height: 1.5em;
+    margin: 10px 0 0;
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    background: #0b0f14;
+    color: #8b96a5;
+    font-size: 13px;
+}
+
+.color-use .use-swatch {
+    font-weight: 600;
+}
+
+.notes {
+    color: var(--fg-muted);
+}
+
+.notes[hidden] {
+    display: none;
+}
+
+.notes ul {
+    margin: 4px 0 0;
+    padding-left: 20px;
+}

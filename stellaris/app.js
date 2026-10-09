@@ -11,6 +11,7 @@ const inputEl = $('input');
 const outputEl = $('output');
 const previewEl = $('preview');
 const addResetCheckbox = $('add-reset');
+const minifyCheckbox = $('minify');
 const lengthInfoEl = $('length-info');
 const meterEl = $('meter');
 const generateNameButton = $('generate-name');
@@ -50,38 +51,21 @@ const lookup = buildLookup(colorData);
 const RESET = lookup.byChar.get('!');
 const codeOf = (color) => `{${color.codes[0]}}`;
 
-// Converts {codes} to Stellaris control characters in a single pass, so one code can
-// never be rewritten by another. {§X} passes a raw Stellaris character straight through.
-function toControlChars(input) {
-    const unknown = [];
-    const output = input.replace(/\{([^{}\s]+)\}/g, (match, key) => {
-        if (key.length === 2 && key[0] === '§' && lookup.byChar.has(key[1])) return DC1_CHAR + key[1];
-        const color = lookup.byCode.get(key.toLowerCase());
-        if (color) return DC1_CHAR + color.char;
-        unknown.push(match);
-        return match;
-    });
-    return { output, unknown };
-}
-
-// Converts a name, adding the auto reset when it is turned on and the name uses a color.
+// Converts a name with the current options. See convert.js for what gets minified.
 function convert(text) {
-    const result = toControlChars(text);
-    if (addResetCheckbox.checked && result.output.includes(DC1_CHAR) && !result.output.endsWith(DC1_CHAR + '!')) {
-        result.output += DC1_CHAR + '!';
-    }
-    return result;
+    return StellarisText.convert(text, lookup, { resetAtEnd: addResetCheckbox.checked, minify: minifyCheckbox.checked });
 }
 
 // ---- storage (best effort; private windows may block it) ----
 
-const state = { input: '', addReset: true, lists: [], selectedList: BUILTIN_LIST_ID };
+const state = { input: '', addReset: true, minify: true, lists: [], selectedList: BUILTIN_LIST_ID };
 
 function load() {
     try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
         if (typeof saved.input === 'string') state.input = saved.input;
         if (typeof saved.addReset === 'boolean') state.addReset = saved.addReset;
+        if (typeof saved.minify === 'boolean') state.minify = saved.minify;
         if (Array.isArray(saved.lists)) {
             state.lists = saved.lists.filter(l => l && typeof l.id === 'string' && typeof l.name === 'string' && Array.isArray(l.names));
         }
@@ -92,6 +76,7 @@ function load() {
 function save() {
     state.input = inputEl.value;
     state.addReset = addResetCheckbox.checked;
+    state.minify = minifyCheckbox.checked;
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* ignore */ }
 }
 
@@ -141,7 +126,19 @@ function addChip(color) {
         onclick: () => insertCode(color)
     }, el('span', { className: 'swatch' }), color.color, el('span', { className: 'code', textContent: codeOf(color) }));
     if (color.rgb) chip.style.setProperty('--chip', color.rgb);
+    const showUse = () => showColorUse(color);
+    chip.addEventListener('mouseenter', showUse);
+    chip.addEventListener('focus', showUse);
     $('color-buttons').append(chip);
+}
+
+// Shows what the game uses the hovered or focused color for.
+function showColorUse(color) {
+    const hint = $('color-use');
+    hint.replaceChildren(
+        el('span', { className: 'use-swatch', style: `color: ${color.rgb || 'inherit'}`, textContent: color.color }),
+        ` ${codeOf(color)} · in game: ${color.vanillaUse}`
+    );
 }
 
 // Inserts a code at the cursor, or wraps the selected text in code ... {reset}.
@@ -186,7 +183,7 @@ function renderPreview(output) {
 }
 
 function update() {
-    const { output, unknown } = convert(inputEl.value);
+    const { output, unknown, warnings, saved } = convert(inputEl.value);
     outputEl.value = output;
     renderPreview(output);
 
@@ -202,6 +199,14 @@ function update() {
     const unknownEl = $('unknown-info');
     unknownEl.hidden = unknown.length === 0;
     unknownEl.textContent = `Unknown code${unknown.length > 1 ? 's' : ''} left as text: ${[...new Set(unknown)].join(' ')}`;
+
+    const warnEl = $('minify-info');
+    const notes = [...new Set(warnings)];
+    warnEl.hidden = notes.length === 0;
+    warnEl.replaceChildren(
+        el('span', { textContent: minifyCheckbox.checked && saved > 0 ? `Removed codes that change nothing, saving ${saved} characters:` : 'Codes that change nothing:' }),
+        el('ul', {}, ...notes.map(n => el('li', { textContent: n })))
+    );
     save();
 }
 
@@ -392,9 +397,10 @@ function init() {
     load();
     inputEl.value = state.input;
     addResetCheckbox.checked = state.addReset;
+    minifyCheckbox.checked = state.minify;
 
     inputEl.addEventListener('input', update);
-    addResetCheckbox.addEventListener('change', () => { update(); refreshNamePool(); });
+    for (const box of [addResetCheckbox, minifyCheckbox]) box.addEventListener('change', () => { update(); refreshNamePool(); });
     generateNameButton.addEventListener('click', generateName);
     $('copy-to-clipboard').addEventListener('click', () => copyText(outputEl.value));
     $('clear-input').addEventListener('click', () => { inputEl.value = ''; inputEl.focus(); update(); });

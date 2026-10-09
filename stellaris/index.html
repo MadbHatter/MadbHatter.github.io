@@ -27,6 +27,7 @@
                 <h1 class="pane-title">color name editor</h1>
 
                 <div class="chips" id="color-buttons" role="toolbar" aria-label="Insert color code"></div>
+                <p class="color-use" id="color-use" aria-live="polite">Hover a color to see what the game uses it for.</p>
                 <p class="hint">Click a color to insert its code at the cursor. Select text first to wrap it in that
                     color. Codes are case-insensitive, and the old short codes like {R} still work.</p>
                 <p class="data-error" id="data-error" role="alert" hidden></p>
@@ -40,6 +41,11 @@
                 <label class="check">
                     <input checked id="add-reset" type="checkbox">
                     <span>Automatically add {reset} at the end (only when the name uses a color)</span>
+                </label>
+
+                <label class="check">
+                    <input checked id="minify" type="checkbox">
+                    <span>Minify: drop codes that change nothing (repeats, unused colors, extra resets)</span>
                 </label>
 
                 <div class="field">
@@ -57,6 +63,7 @@
                 <div class="meter" id="meter" aria-hidden="true"><span id="meter-bar"></span></div>
                 <p class="length" id="length-info"></p>
                 <p class="length over" id="unknown-info" hidden></p>
+                <div class="length notes" id="minify-info" hidden></div>
 
                 <div class="actions">
                     <button id="generate-name" type="button" class="btn">generate name</button>
@@ -162,6 +169,7 @@
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="data.js"></script>
+    <script src="convert.js"></script>
     <script src="app.js"></script>
 </body>
 
